@@ -38,17 +38,23 @@ namespace PickpocketEveryone {
 
     bool ActivateHook(TESObjectREFR* a_targetRef, TESObjectREFR* a_activatorRef, std::uint8_t a_arg3,
                       TESBoundObject* a_object, std::int32_t a_targetCount, bool a_defaultProcessingOnly) {
-        auto targetRace = GetRefRace(a_targetRef);
-        if (IsRaceModified(targetRace)) {
-            targetRace->data.flags.reset(RACE_DATA::Flag::kAllowPickpocket);
-            auto returnValue = activate_original(a_targetRef, a_activatorRef, a_arg3, a_object, a_targetCount, a_defaultProcessingOnly);
-            targetRace->data.flags.set(RACE_DATA::Flag::kAllowPickpocket);
-            return returnValue;
+        auto player = PlayerCharacter::GetSingleton();
+        if (player && player->IsSneaking()) {
+            auto targetRace = GetRefRace(a_targetRef);
+            if (IsRaceModified(targetRace)) {
+                targetRace->data.flags.reset(RACE_DATA::Flag::kAllowPickpocket);
+                auto returnValue = activate_original(a_targetRef, a_activatorRef, a_arg3, a_object, a_targetCount, a_defaultProcessingOnly);
+                targetRace->data.flags.set(RACE_DATA::Flag::kAllowPickpocket);
+                return returnValue;
+            }
         }
         return activate_original(a_targetRef, a_activatorRef, a_arg3, a_object, a_targetCount, a_defaultProcessingOnly);
     }
 
-    void InstallCanPickpocketHook() {
+    void InstallActivateHook() {
+        if (REL::Module::IsVR()) {
+            return;
+        }
         REL::RelocationID hook{55610, 56139};
         ptrdiff_t offset = REL::Offset(0x4A).offset();
         auto& trampoline = SKSE::GetTrampoline();
@@ -61,7 +67,7 @@ namespace PickpocketEveryone {
         SKSE::GetMessagingInterface()->RegisterListener([](SKSE::MessagingInterface::Message* message) {
             if (message->type == SKSE::MessagingInterface::kDataLoaded) {
                 SetAllRacesAllowPickpicket();
-                InstallCanPickpocketHook();
+                InstallActivateHook();
             }
         });
         return true;
