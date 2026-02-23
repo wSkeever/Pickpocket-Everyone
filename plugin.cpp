@@ -1,9 +1,10 @@
 #include "RE/Skyrim.h"
 #include "SKSE/SKSE.h"
+#include <unordered_set>
 using namespace RE;
 
 namespace PickpocketEveryone {
-    inline std::vector<RE::TESRace*> g_modifiedRaces;
+    inline std::unordered_set<RE::TESRace*> g_modifiedRaces;
     using ActivateSignature = bool(TESObjectREFR*, TESObjectREFR*, std::uint8_t, TESBoundObject*, std::int32_t, bool);
     REL::Relocation<ActivateSignature> activate_original;
 
@@ -13,7 +14,7 @@ namespace PickpocketEveryone {
             auto races = dataHandler->GetFormArray<TESRace>();
             for (auto* race : races) {
                 if (race && !race->data.flags.all(RE::RACE_DATA::Flag::kAllowPickpocket)) {
-                    g_modifiedRaces.push_back(race);
+                    g_modifiedRaces.insert(race);
                     race->data.flags.set(RACE_DATA::Flag::kAllowPickpocket);
                 }
             }
@@ -32,10 +33,7 @@ namespace PickpocketEveryone {
     }
 
     bool IsRaceModified(TESRace* race) {
-        if (!race) {
-            return false;
-        }
-        return std::find(g_modifiedRaces.begin(), g_modifiedRaces.end(), race) != g_modifiedRaces.end();
+        return race && g_modifiedRaces.contains(race);
     }
 
     bool ActivateHook(TESObjectREFR* a_targetRef, TESObjectREFR* a_activatorRef, std::uint8_t a_arg3,
@@ -43,8 +41,9 @@ namespace PickpocketEveryone {
         auto targetRace = GetRefRace(a_targetRef);
         if (IsRaceModified(targetRace)) {
             targetRace->data.flags.reset(RACE_DATA::Flag::kAllowPickpocket);
-            return activate_original(a_targetRef, a_activatorRef, a_arg3, a_object, a_targetCount, a_defaultProcessingOnly);
+            auto returnValue = activate_original(a_targetRef, a_activatorRef, a_arg3, a_object, a_targetCount, a_defaultProcessingOnly);
             targetRace->data.flags.set(RACE_DATA::Flag::kAllowPickpocket);
+            return returnValue;
         }
         return activate_original(a_targetRef, a_activatorRef, a_arg3, a_object, a_targetCount, a_defaultProcessingOnly);
     }
