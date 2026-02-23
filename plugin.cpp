@@ -39,7 +39,7 @@ namespace PickpocketEveryone {
     bool ActivateHook(TESObjectREFR* a_targetRef, TESObjectREFR* a_activatorRef, std::uint8_t a_arg3,
                       TESBoundObject* a_object, std::int32_t a_targetCount, bool a_defaultProcessingOnly) {
         auto player = PlayerCharacter::GetSingleton();
-        if (player && player->IsSneaking()) {
+        if (player && a_activatorRef == player && player->IsSneaking()) {
             auto targetRace = GetRefRace(a_targetRef);
             if (IsRaceModified(targetRace)) {
                 targetRace->data.flags.reset(RACE_DATA::Flag::kAllowPickpocket);
