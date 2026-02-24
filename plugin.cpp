@@ -19,6 +19,7 @@ namespace PickpocketEveryone {
                 }
             }
         }
+        SKSE::log::info("Enabled pickpocketing for {} races.", g_modifiedRaces.size());
     }
 
     TESRace* GetRefRace(TESObjectREFR* ref) {
@@ -42,6 +43,7 @@ namespace PickpocketEveryone {
         if (player && a_activatorRef == player && player->IsSneaking()) {
             auto targetRace = GetRefRace(a_targetRef);
             if (IsRaceModified(targetRace)) {
+                SKSE::log::info("Prevented script activation from triggering pickpocketing for {} without player input.", a_targetRef->GetDisplayFullName());
                 targetRace->data.flags.reset(RACE_DATA::Flag::kAllowPickpocket);
                 auto returnValue = activate_original(a_targetRef, a_activatorRef, a_arg3, a_object, a_targetCount, a_defaultProcessingOnly);
                 targetRace->data.flags.set(RACE_DATA::Flag::kAllowPickpocket);
@@ -53,12 +55,14 @@ namespace PickpocketEveryone {
 
     void InstallActivateHook() {
         if (REL::Module::IsVR()) {
+            SKSE::log::info("Not installing activation hook for VR.");
             return;
         }
         REL::RelocationID hook{55610, 56139};
         ptrdiff_t offset = REL::Offset(0x4A).offset();
         auto& trampoline = SKSE::GetTrampoline();
         activate_original = trampoline.write_call<5>(hook.address() + offset, ActivateHook);
+        SKSE::log::info("Installed activation hook for 1.5/1.6.");
     }
 
     SKSEPluginLoad(const SKSE::LoadInterface* skse) {
