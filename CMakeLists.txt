@@ -6,7 +6,7 @@ message("Using toolchain file ${CMAKE_TOOLCHAIN_FILE}.")
 ########################################################################################################################
 project(
         PickpocketEveryone
-        VERSION 0.1.1
+        VERSION 0.2.1
         DESCRIPTION "A smol SKSE plugin that allows you to pickpocket every race - draugrs, falmer, creatures, children."
         LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)

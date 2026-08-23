@@ -5,7 +5,7 @@
   "port-version": 0,
   "description": "A smol SKSE plugin that allows you to pickpocket every race - draugrs, falmer, creatures, children.",
   "homepage": "https://www.skyrimng.com",
-  "license": "Apache-2.0",
+  "license": "GPL-3.0-or-later",
   "features": {
     "plugin": {
       "description": "Build the SKSE plugin.",
